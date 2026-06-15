@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import BookForm from "./components/BookForm";
 import BookList from "./components/BookList";
+import EditBookForm from "./components/EditBookForm";
+import "./index.css";
 
 const API_URL = "http://localhost:8000";
 
 function App() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingBook, setEditingBook] = useState(null);
 
-  // Fetch all books
   const fetchBooks = async () => {
     try {
       const response = await axios.get(`${API_URL}/books`);
@@ -21,7 +23,6 @@ function App() {
     }
   };
 
-  // Add a new book
   const addBook = async (bookData) => {
     try {
       const response = await axios.post(`${API_URL}/books`, bookData);
@@ -31,7 +32,16 @@ function App() {
     }
   };
 
-  // Delete a book
+  const updateBook = async (id, bookData) => {
+    try {
+      const response = await axios.put(`${API_URL}/books/${id}`, bookData);
+      setBooks(books.map((book) => (book.id === id ? response.data : book)));
+      setEditingBook(null); // Close the edit form
+    } catch (error) {
+      console.error("Error updating book:", error);
+    }
+  };
+
   const deleteBook = async (id) => {
     try {
       await axios.delete(`${API_URL}/books/${id}`);
@@ -41,29 +51,46 @@ function App() {
     }
   };
 
+  // Optional: Fetch a single book by ID (if you want to show details)
+  const getBookById = async (id) => {
+    try {
+      const response = await axios.get(`${API_URL}/books/${id}`);
+      console.log("Book details:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching book:", error);
+    }
+  };
+
   useEffect(() => {
     fetchBooks();
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading...</div>
+      <div className="loading">
+        <div>Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Book Store</h1>
-          <p className="text-gray-600">Manage your book collection</p>
-        </header>
+    <div className="container">
+      <header>
+        <h1>Book Store</h1>
+        <p>Manage your book collection</p>
+      </header>
 
-        <BookForm onAddBook={addBook} />
-        <BookList books={books} onDelete={deleteBook} />
-      </div>
+      <BookForm onAddBook={addBook} />
+      <BookList books={books} onDelete={deleteBook} onEdit={setEditingBook} />
+
+      {editingBook && (
+        <EditBookForm
+          book={editingBook}
+          onUpdate={updateBook}
+          onCancel={() => setEditingBook(null)}
+        />
+      )}
     </div>
   );
 }

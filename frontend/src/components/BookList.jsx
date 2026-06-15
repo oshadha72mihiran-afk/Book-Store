@@ -1,6 +1,6 @@
 import BookCard from "./BookCard";
 
-function BookList({ books, onDelete }) {
+function BookList({ books, onDelete, onEdit }) {
   if (books.length === 0) {
     return (
       <div className="text-center py-12">
@@ -14,7 +14,12 @@ function BookList({ books, onDelete }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {books.map((book) => (
-        <BookCard key={book.id} book={book} onDelete={onDelete} />
+        <BookCard
+          key={book.id}
+          book={book}
+          onDelete={onDelete}
+          onEdit={onEdit}
+        />
       ))}
     </div>
   );
